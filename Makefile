@@ -1,7 +1,7 @@
 # Go parameters
-BINARY_NAME=license-check
+BINARY_NAME=go-web-backend
 BINARY_UNIX=$(BINARY_NAME)_unix
-REPO=docker.pkg.github.com/dathan/go-project-template/go-project-template
+REPO=docker.pkg.github.com/dathan/go-web-backend/go-web-backend
 
 .PHONY: all
 all: lint test build

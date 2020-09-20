@@ -1,3 +1,3 @@
 # Purpose
 
-    Following go project layout guidelines all commands go here
+    Rest, Websocket and static content server for a base backend
