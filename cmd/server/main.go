@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/dathan/go-web-backend/pkg/server"
+)
 
 func main() {
-	fmt.Println("hello world1")
+
+	if err := server.New().Start(); err != nil {
+		os.Exit(-1)
+	}
 }

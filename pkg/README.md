@@ -1,3 +1,3 @@
 # Purpose
 
-    Following go project layout guidelines all packages valid for export go here
+Each domain will be its own package. While a large domain will have sub packages.

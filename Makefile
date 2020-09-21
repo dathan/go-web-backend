@@ -1,5 +1,5 @@
 # Go parameters
-BINARY_NAME=go-web-backend
+BINARY_NAME=server
 BINARY_UNIX=$(BINARY_NAME)_unix
 REPO=docker.pkg.github.com/dathan/go-web-backend/go-web-backend
 
