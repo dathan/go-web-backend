@@ -10,6 +10,7 @@ type Server interface {
 	Start() error
 }
 
+//server struct stuv that implements the interface
 type server struct {
 }
 
@@ -18,6 +19,7 @@ func New() Server {
 	return &server{}
 }
 
+// start the server
 func (s *server) Start() error {
 
 	// This is the entry point of your application.
