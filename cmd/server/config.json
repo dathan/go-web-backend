@@ -20,16 +20,16 @@
         }
     },
     "database": {
-        "connection": "none",
+        "connection": "mysql",
         "host": "127.0.0.1",
         "port": 3306,
         "name": "searchsave",
         "username": "root",
-        "password": "root",
+        "password": "R0tate123",
         "options": "charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true&loc=Local",
         "maxOpenConnections": 20,
         "maxIdleConnections": 20,
         "maxLifetime": 300,
-        "autoMigrate": false
+        "autoMigrate": true
     }
 }

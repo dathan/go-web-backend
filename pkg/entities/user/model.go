@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/System-Glitch/goyave/v3/database"
 	"github.com/jinzhu/gorm"
 )
@@ -17,10 +19,12 @@ func init() {
 	database.RegisterModel(&User{})
 }
 
-// User represents a user.
+// User represents a user. Note: There is some framework blead in the annotation of the model.
+// We can see this is gorm.Model but auth: seems to be a hint for the goyave framework
 type User struct {
 	gorm.Model
-	UserName string `gorm:"type:char(100)"`
-	Email    string `gorm:"type:char(100);unique_index"`
-	Password string `gorm:"type:char(100);unique_index"`
+	UserName string    `gorm:"type:varchar(50);unique_index" auth:"username"`
+	Email    string    `gorm:"type:varchar(100);unique_index"`
+	Password string    `gorm:"type:varchar(10);unique_index" auth:"password"`
+	Birthday time.Time `gorm:"index"`
 }
