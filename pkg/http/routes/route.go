@@ -4,10 +4,10 @@ import (
 	"github.com/System-Glitch/goyave/v3"
 	"github.com/System-Glitch/goyave/v3/auth"
 	"github.com/System-Glitch/goyave/v3/cors"
+	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
 	"github.com/dathan/go-web-backend/pkg/http/services/basiclogin"
 	"github.com/dathan/go-web-backend/pkg/http/services/hello"
 	"github.com/dathan/go-web-backend/pkg/http/services/register"
-	"go.elastic.co/apm/model"
 )
 
 // Register is very intresting. router package methods generate a new route on each call remembering the last route in something called the parent so none of the objects go out of scope
@@ -34,7 +34,7 @@ func Register(router *goyave.Router) {
 	// Route to jwt login
 	jwtRouter := router.Subrouter("/auth")
 
-	jwtRouter.Route("POST", "/login", auth.NewJWTController(&model.User{}).Login).Validate(basiclogin.Request)
+	jwtRouter.Route("POST", "/login", auth.NewJWTController(&userentity.User{}).Login).Validate(basiclogin.Request)
 
 	//router.Post("/auth/google/callback", idp.Google).Validate(idp.Google)
 
