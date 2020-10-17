@@ -33,7 +33,6 @@ func Register(router *goyave.Router) {
 
 	// Route to jwt login
 	jwtRouter := router.Subrouter("/auth")
-
 	jwtRouter.Route("POST", "/login", auth.NewJWTController(&userentity.User{}).Login).Validate(basiclogin.Request)
 
 	//router.Post("/auth/google/callback", idp.Google).Validate(idp.Google)
