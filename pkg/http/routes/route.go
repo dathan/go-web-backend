@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/System-Glitch/goyave/v3"
-	"github.com/System-Glitch/goyave/v3/auth"
 	"github.com/System-Glitch/goyave/v3/cors"
 	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
 	"github.com/dathan/go-web-backend/pkg/http/services/basiclogin"
@@ -18,7 +17,7 @@ func Register(router *goyave.Router) {
 	router.CORS(cors.Default())
 
 	// Register your routes here
-
+	_ = userentity.User{}
 	// Route without validation
 	router.Get("/hello", hello.SayHi)
 
@@ -33,7 +32,7 @@ func Register(router *goyave.Router) {
 
 	// Route to jwt login
 	jwtRouter := router.Subrouter("/auth")
-	jwtRouter.Route("POST", "/login", auth.NewJWTController(&userentity.User{}).Login).Validate(basiclogin.Request)
+	jwtRouter.Route("POST", "/login", basiclogin.Login).Validate(basiclogin.Request)
 
 	//router.Post("/auth/google/callback", idp.Google).Validate(idp.Google)
 

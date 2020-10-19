@@ -26,5 +26,5 @@ type User struct {
 	UserName string     `gorm:"type:varchar(50);uniqueIndex:idx_username" auth:"username"`
 	Email    string     `gorm:"type:varchar(100);uniqueIndex:idx_email" auth:"email"`
 	Password string     `gorm:"type:varchar(255);uniqueIndex:idx_password" auth:"password" json:"-"`
-	Birthday *time.Time `gorm:"index"`
+	Birthday *time.Time `gorm:"index" json:"birthday,omitempty"`
 }

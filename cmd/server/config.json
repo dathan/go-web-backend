@@ -5,6 +5,12 @@
         "debug": true,
         "defaultLanguage": "en-US"
     },
+    "auth": {
+        "jwt": {
+          "expiry": 300,
+          "secret": "supersecret"
+        }
+    },
     "server": {
         "host": "127.0.0.1",
         "maintenance": false,

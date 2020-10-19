@@ -7,6 +7,7 @@ type CommonResponse struct {
 	OK           bool             `json:"ok"`
 	ErrorMessage string           `json:"errorMsg,omitempty"`
 	User         *userentity.User `json:"user,omitempty"`
+	Token        string           `json:"token,omitempty"`
 	// add more entities below
 }
 
