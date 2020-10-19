@@ -2,6 +2,7 @@ package register
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/System-Glitch/goyave/v3/auth"
 	"github.com/System-Glitch/goyave/v3/database"
 	"github.com/System-Glitch/goyave/v3/lang"
+	"github.com/dathan/go-web-backend/pkg/entities"
 	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -25,42 +27,54 @@ func Register(response *goyave.Response, request *goyave.Request) {
 
 	columns := auth.FindColumns(user, "username", "email", "password")
 
-	result := database.GetConnection().Where(columns[0].Name+" = ?", username).First(user)
+	// spew.Dump(columns)
+	// TODO: Refactor this block into a account_exists_service
+	result := database.GetConnection().Where(columns[0].Name+" = ?", username).First(&user)
 	notFound := errors.Is(result.Error, gorm.ErrRecordNotFound)
 
-	if result.Error != nil && !notFound {
-		response.JSON(http.StatusUnprocessableEntity, map[string]string{"validationError": lang.Get(request.Lang, "register.account_exists")})
+	if result.Error != nil && !notFound || user.ID > 0 {
+		validationError("register.account_exists_username", request, response)
 		return
+
 	}
 
-	result = database.GetConnection().Where(columns[1].Name+" = ?", email).First(user)
+	result = database.GetConnection().Where(columns[1].Name+" = ?", email).First(&user)
 	notFound = errors.Is(result.Error, gorm.ErrRecordNotFound)
 
-	if result.Error != nil && !notFound {
-		response.JSON(http.StatusUnprocessableEntity, map[string]string{"validationError": lang.Get(request.Lang, "register.account_exists")})
+	if result.Error != nil && !notFound || user.ID > 0 {
+		validationError("register.account_exists_email", request, response)
 		return
 	}
 
-	// todo: abstract the framework out
-	// todo: abstract the datbase layer from the framework
-	user.Email = email
+	// Hash the Password and store it.
 	hpass, err := HashPassword(password)
-
 	if err != nil {
-		response.JSON(http.StatusUnprocessableEntity, map[string]string{"validationError": lang.Get(request.Lang, "register.password")})
+		validationError("register.password", request, response)
 		return
 	}
 
+	// set the user
 	user.Password = hpass
 	user.UserName = strings.ToLower(username)
 	user.Email = email
 	user.Birthday = nil // there is an upstream bug with 0000-00-00 date defults, set this to nil
 
 	result = database.GetConnection().Create(&user)
+
 	if result.Error != nil {
 		panic(result.Error)
 	}
-	response.JSON(http.StatusOK, user)
+
+	resp := entities.NewResponse(true)
+	resp.User = &user
+	response.JSON(http.StatusOK, resp)
+}
+
+func validationError(langKey string, request *goyave.Request, response *goyave.Response) {
+	resp := entities.NewResponse(false)
+	resp.ErrorMessage = fmt.Sprintf("validationError: %s", lang.Get(request.Lang, langKey))
+	response.JSON(http.StatusUnprocessableEntity, resp)
+	return
 }
 
 func HashPassword(password string) (string, error) {

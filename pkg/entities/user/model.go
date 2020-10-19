@@ -23,8 +23,8 @@ func init() {
 // We can see this is gorm.Model but auth: seems to be a hint for the goyave framework
 type User struct {
 	gorm.Model
-	UserName string     `gorm:"type:varchar(50);unique_index" auth:"username"`
-	Email    string     `gorm:"type:varchar(100);unique_index" auth:"email"`
-	Password string     `gorm:"type:varchar(255);unique_index" auth:"password"`
-	Birthday *time.Time `gorm:"index";default:0`
+	UserName string     `gorm:"type:varchar(50);uniqueIndex:idx_username" auth:"username"`
+	Email    string     `gorm:"type:varchar(100);uniqueIndex:idx_email" auth:"email"`
+	Password string     `gorm:"type:varchar(255);uniqueIndex:idx_password" auth:"password" json:"-"`
+	Birthday *time.Time `gorm:"index"`
 }
