@@ -57,5 +57,4 @@ func Login(response *goyave.Response, request *goyave.Request) {
 	resp.Token = token
 	resp.User = &user
 	response.JSON(http.StatusOK, resp)
-	return
 }

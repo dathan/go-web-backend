@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/System-Glitch/goyave/v3"
+	"github.com/System-Glitch/goyave/v3/auth"
 	"github.com/System-Glitch/goyave/v3/cors"
 	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
 	"github.com/dathan/go-web-backend/pkg/http/services/basiclogin"
@@ -15,11 +16,10 @@ func Register(router *goyave.Router) {
 	// Applying default CORS settings (allow all methods and all origins)
 	// Learn more about CORS options here: https://system-glitch.github.io/goyave/guide/advanced/cors.html
 	router.CORS(cors.Default())
+	authenticator := auth.Middleware(&userentity.User{}, &auth.JWTAuthenticator{})
 
-	// Register your routes here
-	_ = userentity.User{}
 	// Route without validation
-	router.Get("/hello", hello.SayHi)
+	router.Get("/hello", hello.SayHi).Middleware(authenticator)
 
 	// Route with validation
 	router.Post("/echo", hello.Echo).Validate(hello.EchoRequest)
