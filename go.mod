@@ -4,7 +4,7 @@ go 1.15
 
 replace (
   github.com/dathan/go-web-backend => /Users/dathan.pattishall/workspace/go-web-backend
-  github.com/dathan/go-web-backend/pkg/auth => /Users/dathan.pattishall/workspace/go-web-backend/pkg/auth
+  github.com/dathan/go-web-backend/pkg/http/services/auth => /Users/dathan.pattishall/workspace/go-web-backend/pkg/http/services/auth
 )
 require (
 	github.com/System-Glitch/goyave v1.0.0
