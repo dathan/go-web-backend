@@ -8,6 +8,7 @@ type CommonResponse struct {
 	ErrorMessage string           `json:"errorMsg,omitempty"`
 	User         *userentity.User `json:"user,omitempty"`
 	Token        string           `json:"token,omitempty"`
+	RefreshToken string           `json:"refresh_token,omitempty"`
 	// add more entities below
 }
 

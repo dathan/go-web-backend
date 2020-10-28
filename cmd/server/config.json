@@ -8,7 +8,9 @@
     "auth": {
         "jwt": {
           "expiry": 300,
-          "secret": "supersecret"
+          "secret": "supersecret", 
+          "refresh_secret": "supersecret2",
+          "refresh_expiry": 3000
         }
     },
     "server": {
