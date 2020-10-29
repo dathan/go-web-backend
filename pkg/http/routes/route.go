@@ -27,6 +27,8 @@ func Register(router *goyave.Router) {
 	jwtRouter := router.Subrouter("/auth")
 	jwtRouter.Route("POST", "/login", loggedInService.Login).Validate(localauth.LoginRequest)
 	jwtRouter.Route("POST", "/refresh", loggedInService.Refresh).Validate(localauth.RefreshRequest)
+	jwtRouter.Route("GET", "/google", loggedInService.GoogleLogin)
+	jwtRouter.Route("GET", "/google/callback", loggedInService.GoogleAuthCallBack)
 
 	// Route login required
 	router.Get("/hello", hello.SayHi).Middleware(authenticator)

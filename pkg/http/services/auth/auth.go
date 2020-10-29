@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -19,7 +20,11 @@ import (
 	"github.com/System-Glitch/goyave/v3/lang"
 	"github.com/dathan/go-web-backend/pkg/entities"
 	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -54,6 +59,11 @@ func init() {
 		IsSlice:          false,
 		AuthorizedValues: []interface{}{},
 	})
+
+	goth.UseProviders(
+		google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http://localhost:3000/auth/google/callback"),
+	)
+
 }
 
 // Authenticate fetch the user corresponding to the token
@@ -193,6 +203,25 @@ func (a *JWTAuthenticator) ResponseJWT(user *userentity.User, resp *entities.Com
 
 	resp.RefreshToken = refresh_token
 	resp.User = user
+	response.JSON(http.StatusOK, resp)
+}
+
+// Google start of the login
+func (c *JWTAuthenticator) GoogleLogin(response *goyave.Response, request *goyave.Request) {
+	gothic.BeginAuthHandler(response, request)
+}
+
+//
+func (c *JWTAuthenticator) GoogleAuthCallBack(response *goyave.Response, request *goyave.Request) {
+	resp := entities.NewResponse(false)
+	user, err := gothic.CompleteUserAuth(response, request)
+	if err != nil {
+		response.JSON(http.StatusInternalServerError, resp)
+		return
+	}
+
+	resp.OK = true
+	spew.Dump(user)
 	response.JSON(http.StatusOK, resp)
 }
 
