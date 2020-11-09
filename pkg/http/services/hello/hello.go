@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/System-Glitch/goyave/v3"
-	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
+	"github.com/dathan/go-web-backend/pkg/entities"
 )
 
 // Controllers are files containing a collection of Handlers related to a specific feature.
@@ -26,7 +26,7 @@ import (
 // query params and route parameters.
 // https://system-glitch.github.io/goyave/guide/basics/requests.html
 func SayHi(response *goyave.Response, request *goyave.Request) {
-	user := request.User.(*userentity.User)
+	user := request.User.(*entities.User)
 	_ = response.String(http.StatusOK, fmt.Sprintf("Hi %s\n", user.UserName))
 
 }

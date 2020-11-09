@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/System-Glitch/goyave/v3"
 	_ "github.com/System-Glitch/goyave/v3/database/dialect/mysql" // this loads the driver and call the package init
-	_ "github.com/dathan/go-web-backend/pkg/entities/user"        // this registers the model at startup to create the instances.
+	_ "github.com/dathan/go-web-backend/pkg/entities"             // this registers the model at startup to create the instances.
 	"github.com/dathan/go-web-backend/pkg/http/routes"
 )
 

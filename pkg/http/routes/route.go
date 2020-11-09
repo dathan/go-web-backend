@@ -4,7 +4,7 @@ import (
 	"github.com/System-Glitch/goyave/v3"
 	"github.com/System-Glitch/goyave/v3/auth"
 	"github.com/System-Glitch/goyave/v3/cors"
-	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
+	"github.com/dathan/go-web-backend/pkg/entities"
 	localauth "github.com/dathan/go-web-backend/pkg/http/services/auth"
 	"github.com/dathan/go-web-backend/pkg/http/services/hello"
 	"github.com/dathan/go-web-backend/pkg/http/services/register"
@@ -18,7 +18,7 @@ func Register(router *goyave.Router) {
 	router.CORS(cors.Default())
 
 	loggedInService := &localauth.JWTAuthenticator{}
-	authenticator := auth.Middleware(&userentity.User{}, loggedInService)
+	authenticator := auth.Middleware(&entities.User{}, loggedInService)
 
 	// Route to register
 	router.Post("/register", register.Register).Validate(register.Request)

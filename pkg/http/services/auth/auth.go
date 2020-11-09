@@ -19,8 +19,9 @@ import (
 	"github.com/System-Glitch/goyave/v3/helper"
 	"github.com/System-Glitch/goyave/v3/lang"
 	"github.com/dathan/go-web-backend/pkg/entities"
-	userentity "github.com/dathan/go-web-backend/pkg/entities/user"
-	"github.com/davecgh/go-spew/spew"
+	localresponse "github.com/dathan/go-web-backend/pkg/http/response"
+	"github.com/dathan/go-web-backend/pkg/http/services/register"
+	userservice "github.com/dathan/go-web-backend/pkg/http/services/user"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -61,7 +62,7 @@ func init() {
 	})
 
 	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http://localhost:3000/auth/google/callback"),
+		google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http://localhost:8080/auth/google/callback", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"),
 	)
 
 }
@@ -119,10 +120,10 @@ func (a *JWTAuthenticator) makeError(language string, bitfield uint32) error {
 
 // login
 func (c *JWTAuthenticator) Login(response *goyave.Response, request *goyave.Request) {
-	user := userentity.User{}
+	user := entities.User{}
 	username := request.String("username")
 	columns := auth.FindColumns(user, "username", "password")
-	resp := entities.NewResponse(false)
+	resp := localresponse.NewResponse(false)
 
 	result := database.GetConnection().Where(columns[0].Name+" = ?", username).First(&user)
 	notFound := errors.Is(result.Error, gorm.ErrRecordNotFound)
@@ -147,7 +148,7 @@ func (c *JWTAuthenticator) Login(response *goyave.Response, request *goyave.Requ
 func (c *JWTAuthenticator) Refresh(response *goyave.Response, request *goyave.Request) {
 
 	refreshToken := request.String("refresh_token")
-	resp := entities.NewResponse(false)
+	resp := localresponse.NewResponse(false)
 
 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
@@ -182,7 +183,7 @@ func (c *JWTAuthenticator) Refresh(response *goyave.Response, request *goyave.Re
 	c.ResponseJWT(user, resp, response)
 }
 
-func (a *JWTAuthenticator) ResponseJWT(user *userentity.User, resp *entities.CommonResponse, response *goyave.Response) {
+func (a *JWTAuthenticator) ResponseJWT(user *entities.User, resp *localresponse.CommonResponse, response *goyave.Response) {
 
 	tokenStr, err := GenerateToken(user, "auth")
 	if err != nil {
@@ -208,21 +209,74 @@ func (a *JWTAuthenticator) ResponseJWT(user *userentity.User, resp *entities.Com
 
 // Google start of the login
 func (c *JWTAuthenticator) GoogleLogin(response *goyave.Response, request *goyave.Request) {
-	gothic.BeginAuthHandler(response, request)
+	r := request.Request()
+	r.URL.RawQuery = "provider=google"
+	gothic.BeginAuthHandler(response, r)
 }
 
 //
 func (c *JWTAuthenticator) GoogleAuthCallBack(response *goyave.Response, request *goyave.Request) {
-	resp := entities.NewResponse(false)
-	user, err := gothic.CompleteUserAuth(response, request)
+	resp := localresponse.NewResponse(false)
+	user, err := gothic.CompleteUserAuth(response, request.Request())
 	if err != nil {
 		response.JSON(http.StatusInternalServerError, resp)
 		return
 	}
 
 	resp.OK = true
-	spew.Dump(user)
-	response.JSON(http.StatusOK, resp)
+	if len(user.Email) < 3 {
+		resp.OK = false
+		resp.ErrorMessage = fmt.Sprintf("Invalid callback from google: %v", response)
+		response.JSON(http.StatusExpectationFailed, resp)
+		return
+	}
+
+	// check to see if the user exists by email
+	localUser := entities.User{}
+	if userservice.Exists("email", user.Email, &localUser) == true {
+		//record the user (session)
+		// response the jwt
+		err := c.recordSession(localUser.ID, user.Provider, user.UserID, user.AccessToken, user.AccessTokenSecret, user.RefreshToken, user.ExpiresAt)
+		if err != nil {
+			resp.OK = false
+			resp.ErrorMessage = fmt.Sprintf("Invalid callback from google: %v", response)
+			response.JSON(http.StatusExpectationFailed, resp)
+			return
+		}
+		resp.OK = true
+		c.ResponseJWT(&localUser, resp, response)
+		return
+	}
+
+	newUser, err := register.RegisterUser(user.Email, user.Email, user.AccessToken)
+
+	if err != nil {
+		resp.ErrorMessage = err.Error()
+		response.JSON(http.StatusInternalServerError, resp)
+		return
+	}
+
+	err = c.recordSession(newUser.ID, user.Provider, user.UserID, user.AccessToken, user.AccessTokenSecret, user.RefreshToken, user.ExpiresAt)
+	resp.OK = true
+	c.ResponseJWT(&localUser, resp, response)
+}
+
+func (c *JWTAuthenticator) recordSession(UserID uint, Provider, ProviderID, AccessToke, AccessTokenSecret, RefreshToken string, Expires time.Time) error {
+
+	sess := &entities.Session{}
+
+	sess.UserID = UserID
+	sess.Provider = Provider
+	sess.ProviderID = ProviderID
+	sess.AccessToken = AccessToke
+	sess.AccessTokenSecret = AccessTokenSecret
+	sess.RefreshToken = RefreshToken
+	sess.ExpiresAt = Expires
+	result := database.GetConnection().Create(sess)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 // GenerateToken generate a new JWT.
@@ -230,7 +284,7 @@ func (c *JWTAuthenticator) GoogleAuthCallBack(response *goyave.Response, request
 // the "auth.jwt.secret" config entry.
 // The token is set to expire in the amount of seconds defined by
 // the "auth.jwt.expiry" config entry.
-func GenerateToken(user *userentity.User, tokenType string) (string, error) {
+func GenerateToken(user *entities.User, tokenType string) (string, error) {
 	var expiry time.Duration
 	var expiryKey string = "auth.jwt.expiry"
 	var secretKey string = "auth.jwt.secret"
@@ -264,8 +318,8 @@ func satisfySignedString(token *jwt.Token, config_secret_key string) ([]byte, er
 
 }
 
-func tokenToUser(token *jwt.Token) (*userentity.User, error) {
-	var user userentity.User
+func tokenToUser(token *jwt.Token) (*entities.User, error) {
+	var user entities.User
 	var claims jwt.MapClaims
 	var ok bool = false
 
@@ -284,7 +338,7 @@ func tokenToUser(token *jwt.Token) (*userentity.User, error) {
 
 }
 
-func signedString(user *userentity.User, secret string) []byte {
+func signedString(user *entities.User, secret string) []byte {
 	return []byte(user.Password + ":" + secret)
 }
 
