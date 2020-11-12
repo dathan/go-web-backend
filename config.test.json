@@ -1,0 +1,34 @@
+{
+    "app": {
+        "name": "searchsave",
+        "environment": "localhost",
+        "debug": true,
+        "defaultLanguage": "en-US"
+    },
+    "auth": {
+        "jwt": {
+          "expiry": 300,
+          "secret": "supersecret", 
+          "refresh_secret": "supersecret2",
+          "refresh_expiry": 3000
+        }
+    },
+    "server": {
+        "host": "127.0.0.1",
+        "maintenance": false,
+        "protocol": "http",
+        "domain": "",
+        "port": 8080,
+        "httpsPort": 8081,
+        "timeout": 10,
+        "maxUploadSize": 10,
+        "tls": {
+            "cert": "",
+            "key": ""
+        }
+    },
+    "database": {
+        "connection": "none",
+        "autoMigrate": true
+    }
+}

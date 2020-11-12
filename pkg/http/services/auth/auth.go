@@ -1,3 +1,4 @@
+// Package auth contains all the logic to login from either an email flow or from an IDP
 package auth
 
 //
@@ -34,7 +35,7 @@ import (
 type JWTAuthenticator struct{}
 
 var _ auth.Authenticator = (*JWTAuthenticator)(nil) // implements Authenticator
-
+// set up
 func init() {
 	config.Register("auth.jwt.secret", config.Entry{
 		Value:            nil,
@@ -109,6 +110,7 @@ func (a *JWTAuthenticator) Authenticate(request *goyave.Request, user interface{
 	return a.makeError(request.Lang, err.(*jwt.ValidationError).Errors)
 }
 
+// makeErrror is a helper error method to return the correct translated error
 func (a *JWTAuthenticator) makeError(language string, bitfield uint32) error {
 	if bitfield&jwt.ValidationErrorNotValidYet != 0 {
 		return fmt.Errorf(lang.Get(language, "auth.jwt-not-valid-yet"))
@@ -118,7 +120,9 @@ func (a *JWTAuthenticator) makeError(language string, bitfield uint32) error {
 	return fmt.Errorf(lang.Get(language, "auth.jwt-invalid"))
 }
 
-// login
+// Login is a handler for a local username and password login flow.
+// The Handler checks the database responds with a jwt struct.
+// TODO: Ratelimit, banner, tracker, cookie?
 func (c *JWTAuthenticator) Login(response *goyave.Response, request *goyave.Request) {
 	user := entities.User{}
 	username := request.String("username")
@@ -144,7 +148,9 @@ func (c *JWTAuthenticator) Login(response *goyave.Response, request *goyave.Requ
 	c.ResponseJWT(&user, resp, response)
 }
 
-// Refresh a token is a handler that looks at the refersh token and respond with a new refesh token
+// Refresh is a handler that refreshes the Bearer Token. The Bearer Token is tied to the
+// users auth method such as password or oauth IDP token.
+// TODO: Add session tracking and session limits.
 func (c *JWTAuthenticator) Refresh(response *goyave.Response, request *goyave.Request) {
 
 	refreshToken := request.String("refresh_token")
@@ -183,6 +189,7 @@ func (c *JWTAuthenticator) Refresh(response *goyave.Response, request *goyave.Re
 	c.ResponseJWT(user, resp, response)
 }
 
+//ResponseJWT sends a new Bearer Token and Refresh Token to the JWT client of the logged in User.
 func (a *JWTAuthenticator) ResponseJWT(user *entities.User, resp *localresponse.CommonResponse, response *goyave.Response) {
 
 	tokenStr, err := GenerateToken(user, "auth")
@@ -207,14 +214,15 @@ func (a *JWTAuthenticator) ResponseJWT(user *entities.User, resp *localresponse.
 	response.JSON(http.StatusOK, resp)
 }
 
-// Google start of the login
+// GoogleLogin is a handler that starts the redirect to google with the JWT scope request of userinfo
 func (c *JWTAuthenticator) GoogleLogin(response *goyave.Response, request *goyave.Request) {
 	r := request.Request()
-	r.URL.RawQuery = "provider=google"
+	r.URL.RawQuery = "provider=google" // this is required to trick the dependant module to use the provider without hacking the url to do so.
 	gothic.BeginAuthHandler(response, r)
 }
 
-//
+// GoogleAuthCallBack is a handler which handles the code flow of the IDP response from the user authorize action.
+// At this point we should have a code request to verify the authorize at this layer to the provider
 func (c *JWTAuthenticator) GoogleAuthCallBack(response *goyave.Response, request *goyave.Request) {
 	resp := localresponse.NewResponse(false)
 	user, err := gothic.CompleteUserAuth(response, request.Request())
@@ -261,6 +269,7 @@ func (c *JWTAuthenticator) GoogleAuthCallBack(response *goyave.Response, request
 	c.ResponseJWT(&localUser, resp, response)
 }
 
+// quick wrapper to record a session
 func (c *JWTAuthenticator) recordSession(UserID uint, Provider, ProviderID, AccessToke, AccessTokenSecret, RefreshToken string, Expires time.Time) error {
 
 	sess := &entities.Session{}
@@ -306,7 +315,8 @@ func GenerateToken(user *entities.User, tokenType string) (string, error) {
 	return token.SignedString(signedString(user, config.GetString(secretKey)))
 }
 
-// satisfySignedString is using my custom strong. token at this stage is not valid. We are using a callback to return the key
+// satisfySignedString is using my custom strong. token at this stage is not valid.
+// We are using a callback to return the key
 func satisfySignedString(token *jwt.Token, config_secret_key string) ([]byte, error) {
 
 	user, err := tokenToUser(token)
@@ -318,6 +328,9 @@ func satisfySignedString(token *jwt.Token, config_secret_key string) ([]byte, er
 
 }
 
+// helper function to get the user information from the JWT token.
+// We are looking up the user service form the token.
+// TODO: user information should be accessed via a token.
 func tokenToUser(token *jwt.Token) (*entities.User, error) {
 	var user entities.User
 	var claims jwt.MapClaims
@@ -338,6 +351,8 @@ func tokenToUser(token *jwt.Token) (*entities.User, error) {
 
 }
 
+// helper function to ensure a common format on secrets.
+// TODO make it provider aware.
 func signedString(user *entities.User, secret string) []byte {
 	return []byte(user.Password + ":" + secret)
 }
@@ -392,6 +407,7 @@ func FindColumns(strct interface{}, fields ...string) []*auth.Column {
 	return result
 }
 
+// quick copy and paste need to fix this concept I like it
 func columnName(field *reflect.StructField) string {
 	for _, t := range strings.Split(field.Tag.Get("gorm"), ";") { // Check for gorm column name override
 		if strings.HasPrefix(t, "column") {

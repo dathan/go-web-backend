@@ -10,7 +10,7 @@ import "github.com/System-Glitch/goyave/v3/validation"
 
 // Learn more about validation here: https://system-glitch.github.io/goyave/guide/basics/validation.html
 
-// This is the validation rules for the "/echo" route, which is simply
+// This is the validation rules for the "/auth" route, which is simply
 // writing the input as a response.
 var (
 	LoginRequest validation.RuleSet = validation.RuleSet{

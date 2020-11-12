@@ -9,7 +9,6 @@ replace (
 require (
 	github.com/System-Glitch/goyave v1.0.0
 	github.com/System-Glitch/goyave/v3 v3.1.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/jinzhu/gorm v1.9.11
 	github.com/markbates/goth v1.65.0

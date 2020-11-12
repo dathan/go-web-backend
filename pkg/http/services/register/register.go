@@ -1,3 +1,4 @@
+// Package register handles the registration logic
 package register
 
 import (
@@ -17,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// This is a non auth endpoint, Given the request add to the database and return the nextUrl (login)
+// Register is a handler that accepts username, email, password to register a new user.
 func Register(response *goyave.Response, request *goyave.Request) {
 
 	username := request.String("username")
@@ -43,14 +44,13 @@ func Register(response *goyave.Response, request *goyave.Request) {
 
 	resp := localresponse.NewResponse(true)
 	resp.User = user
-	response.JSON(http.StatusOK, resp)
+	_ = response.JSON(http.StatusOK, resp)
 }
 
 func validationError(langKey string, request *goyave.Request, response *goyave.Response) {
 	resp := localresponse.NewResponse(false)
 	resp.ErrorMessage = fmt.Sprintf("validationError: %s", lang.Get(request.Lang, langKey))
-	response.JSON(http.StatusUnprocessableEntity, resp)
-	return
+	_ = response.JSON(http.StatusUnprocessableEntity, resp)
 }
 
 func HashPassword(password string) (string, error) {
