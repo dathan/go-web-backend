@@ -7,10 +7,10 @@
     },
     "auth": {
         "jwt": {
-          "expiry": 3000,
+          "expiry": 3000000,
           "secret": "supersecret", 
           "refresh_secret": "supersecret2",
-          "refresh_expiry": 3000
+          "refresh_expiry": 300000
         }
     },
     "server": {
