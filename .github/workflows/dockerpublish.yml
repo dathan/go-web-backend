@@ -21,6 +21,7 @@ jobs:
     if: github.event_name == 'push'
 
     steps:
+      - uses: actions/checkout@v2
       #needed to access private repos with ssh
       #     - uses: shimataro/ssh-key-action@v2.0.1
       #       with:
