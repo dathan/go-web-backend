@@ -22,17 +22,19 @@ jobs:
 
     steps:
       #needed to access private repos with ssh
-      - uses: shimataro/ssh-key-action@v2.0.1
-        with:
-          key: ${{ secrets.SSH_PRIV_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-          name: id_rsa # optional
-      
-      - uses: actions/checkout@v2
-
-      - name: Log into registry
-        #note by default GITHUB_TOKEN is already set in your repo to push to the registry by default for github
-        run: echo "${{ secrets.GITHUB_TOKEN }}" |docker login docker.pkg.github.com --username ${{github.actor}} --password-stdin
-
-      - name: Build, Tag, Push
-        run: make docker-push
+      #     - uses: shimataro/ssh-key-action@v2.0.1
+      #       with:
+      #         key: ${{ secrets.SSH_PRIV_KEY }}
+      #         known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      #         name: id_rsa # optional
+      #     
+      #     - uses: actions/checkout@v2
+      #
+      #     - name: Log into registry
+      #       #note by default GITHUB_TOKEN is already set in your repo to push to the registry by default for github
+      #       run: echo "${{ secrets.GITHUB_TOKEN }}" |docker login docker.pkg.github.com --username ${{github.actor}} --password-stdin
+      #
+      #     - name: Build, Tag, Push
+      #       run: make docker-push
+      - name: Build
+        run: make docker-build

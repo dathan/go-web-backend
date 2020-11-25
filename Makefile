@@ -25,6 +25,7 @@ clean:
 
 .PHONY: run
 run:
+				lsof -i tcp:8080 |awk '{print $$2}' |grep -v PID |xargs kill
 				cd ./cmd/${BINARY_NAME} && go run *.go && cd ../../
 
 .PHONY: vendor

@@ -8,6 +8,7 @@ import (
 	localauth "github.com/dathan/go-web-backend/pkg/http/services/auth"
 	"github.com/dathan/go-web-backend/pkg/http/services/hello"
 	"github.com/dathan/go-web-backend/pkg/http/services/register"
+	"github.com/dathan/go-web-backend/pkg/http/services/upload"
 )
 
 // Register is very intresting. router package methods generate a new route on each call remembering the last route in something called the parent so none of the objects go out of scope
@@ -35,5 +36,8 @@ func Register(router *goyave.Router) {
 
 	// Route with validation
 	router.Post("/echo", hello.Echo).Validate(hello.EchoRequest)
+
+	// You must be logged in to upload a file
+	router.Post("/csv/upload", upload.CSVUpload).Middleware(authenticator)
 
 }
