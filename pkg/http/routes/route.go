@@ -6,6 +6,7 @@ import (
 	"github.com/System-Glitch/goyave/v3/cors"
 	"github.com/dathan/go-web-backend/pkg/entities"
 	localauth "github.com/dathan/go-web-backend/pkg/http/services/auth"
+	"github.com/dathan/go-web-backend/pkg/http/services/contacts"
 	"github.com/dathan/go-web-backend/pkg/http/services/hello"
 	"github.com/dathan/go-web-backend/pkg/http/services/register"
 	"github.com/dathan/go-web-backend/pkg/http/services/upload"
@@ -39,5 +40,6 @@ func Register(router *goyave.Router) {
 
 	// You must be logged in to upload a file
 	router.Post("/csv/upload", upload.CSVUpload).Middleware(authenticator)
+	router.Get("/contacts", contacts.List).Middleware(authenticator)
 
 }

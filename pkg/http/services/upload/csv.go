@@ -22,6 +22,7 @@ import (
 type csvUp struct {
 }
 
+// CSVUpload handles the upload request. Read the multipart and save the data to the database.
 func CSVUpload(response *goyave.Response, request *goyave.Request) {
 	// authentication happens at a layer above this, this we can assume the logged in user is available
 	user := request.User.(*entities.User)
@@ -71,7 +72,8 @@ func CSVUpload(response *goyave.Response, request *goyave.Request) {
 
 }
 
-func CSVList(response *goyave.Response, request *goyave.Request) {
+//CVSList lists the raw uploaded contact paths
+func CVSList(response *goyave.Response, request *goyave.Request) {
 	// authentication happens at a layer above this, this we can assume the logged in user is available
 	user := request.User.(*entities.User)
 	rows := []entities.Contacts_Paths{}
@@ -85,6 +87,8 @@ func CSVList(response *goyave.Response, request *goyave.Request) {
 
 	resp := localresponse.NewResponse(true)
 	resp.Contacts_Paths = &rows
+	response.JSON(http.StatusOK, resp)
+
 }
 
 //
@@ -95,6 +99,7 @@ func (c *csvUp) saveUploadToDatabase(reader *multipart.Reader, user *entities.Us
 
 	//copy each part to destination.
 	for {
+
 		row := &entities.Contacts_Paths{}
 		row.OwnerID = user.ID
 		part, err := reader.NextPart()
@@ -138,6 +143,7 @@ func (c *csvUp) saveUploadToDatabase(reader *multipart.Reader, user *entities.Us
 		if err != nil {
 			return nil, err
 		}
+
 		row.CSVData = string(byte_data)
 		cPaths = append(cPaths, row)
 		if _, err := io.Copy(dst, part); err != nil {
@@ -152,10 +158,10 @@ func (c *csvUp) saveUploadToDatabase(reader *multipart.Reader, user *entities.Us
 	}
 
 	fmt.Printf("Uploaded %d files\n\t%+v\n", len(files), files)
-
 	return cPaths, nil
 }
 
+// validateCSV if the format looks correct return the parsed contacts
 func (c *csvUp) validateCSV(row entities.Contacts_Paths, user *entities.User) ([]entities.Contacts_Parsed, error) {
 
 	r := csv.NewReader(strings.NewReader(row.CSVData))
@@ -183,7 +189,7 @@ func (c *csvUp) validateCSV(row entities.Contacts_Paths, user *entities.User) ([
 
 		cpCSVRow.OwnerID = user.ID
 		//todo: clean up
-		if len(record) == 5 {
+		if len(record) >= 5 {
 			cpCSVRow.StreetAddress = record[3]
 			cpCSVRow.CityCode = record[4]
 			cpCSVRow.ZipCode = record[5]
@@ -206,8 +212,4 @@ func isValidEmail(emailAddress string) bool {
 		return false
 	}
 	return emailRegex.MatchString(emailAddress)
-}
-
-func (c *csvUp) getAllParsedFiles(user *entities.User) {
-
 }
