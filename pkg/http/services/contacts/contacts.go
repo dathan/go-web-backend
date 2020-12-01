@@ -9,7 +9,7 @@ import (
 	localresponse "github.com/dathan/go-web-backend/pkg/http/response"
 )
 
-//List provides the full contact list TODO add pagination
+// List provides the full contact list TODO add pagination
 func List(response *goyave.Response, request *goyave.Request) {
 	// authentication happens at a layer above this, this we can assume the logged in user is available
 	user := request.User.(*entities.User)
@@ -24,5 +24,25 @@ func List(response *goyave.Response, request *goyave.Request) {
 
 	resp := localresponse.NewResponse(true)
 	resp.Contacts_Parsed = &rows
+	response.JSON(http.StatusOK, resp)
+}
+
+// Add a contact to the contacts parsed
+func Add(response *goyave.Response, request *goyave.Request) {
+	// authentication happens at a layer above this, this we can assume the logged in user is available
+	user := request.User.(*entities.User)
+	row := entities.Contacts_Parsed{}
+	row.OwnerID = user.ID
+	row.Email = request.String("email")
+
+	tx := database.GetConnection().Create(row)
+	if tx.Error != nil {
+		resp := localresponse.NewResponse(false)
+		resp.ErrorMessage = tx.Error.Error()
+		response.JSON(http.StatusInternalServerError, resp)
+		return
+	}
+
+	resp := localresponse.NewResponse(true)
 	response.JSON(http.StatusOK, resp)
 }

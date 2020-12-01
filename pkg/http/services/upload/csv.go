@@ -91,6 +91,10 @@ func CVSList(response *goyave.Response, request *goyave.Request) {
 
 }
 
+func (c *csvUp) saveParsedContacts() {
+	
+}
+
 //
 // saveUploadToDatabase takes the files and puts them in the db
 func (c *csvUp) saveUploadToDatabase(reader *multipart.Reader, user *entities.User) ([]*entities.Contacts_Paths, error) {

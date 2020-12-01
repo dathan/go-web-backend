@@ -41,5 +41,6 @@ func Register(router *goyave.Router) {
 	// You must be logged in to upload a file
 	router.Post("/csv/upload", upload.CSVUpload).Middleware(authenticator)
 	router.Get("/contacts", contacts.List).Middleware(authenticator)
+	router.Post("/contacts", contacts.Add).Middleware(authenticator).Validate(contacts.AddContactRequest)
 
 }
