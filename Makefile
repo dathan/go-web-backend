@@ -44,12 +44,12 @@ docker-build:
 					-t $(or ${dockerImage},$(BINARY_NAME)-release) .
 
 .PHONY: docker-tag
-docker-tag:
+docker-tag: docker-build
 			docker tag `docker image ls --filter 'reference=$(BINARY_NAME)-release' -q` $(REPO):`git rev-parse HEAD`
 
 # Push the container
 .PHONY: docker-push
-docker-push: docker-build docker-tag
+docker-push: docker-tag
 				docker push $(REPO):`git rev-parse HEAD`
 
 
