@@ -9,8 +9,8 @@
             "command": "make run",
             "options": {
                 "env": {
-                    "GOOGLE_KEY" : "247965781005-ooluimgn4lf24trmd0ta7g8cbigutg1o.apps.googleusercontent.com",
-                    "GOOGLE_SECRET" : "fEw0umaFlwdKvpmq0KdGv3AZ",
+                    "GOOGLE_KEY" : "",
+                    "GOOGLE_SECRET" : "",
                 }
             },
             "group": {
