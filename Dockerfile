@@ -2,8 +2,8 @@
 # the 1st FROM builds the application
 FROM golang:1.14-alpine3.11 AS baseGo
   LABEL stage=build
-  ARG GITHUB_SSH_PRIV_KEY
-  RUN test -n "$GITHUB_SSH_PRIV_KEY"
+  #ARG GITHUB_SSH_PRIV_KEY
+  #RUN test -n "$GITHUB_SSH_PRIV_KEY"
 
   ENV CGO_ENABLED 0
   RUN apk add --no-cache git bash openssh
